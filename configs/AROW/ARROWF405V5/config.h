@@ -26,6 +26,10 @@
 #define BOARD_NAME        ARROWF405V5
 #define MANUFACTURER_ID   AROW
 
+// 板载 HSE 晶振 8MHz。未定义时 common_post.h 默认 0，SetSysClock() 会走
+// "HSE frequency unknown" 分支改用 HSI（±1% RC 振荡器）作 PLL 源
+#define SYSTEM_HSE_MHZ 8
+
 #define USE_ACC
 #define USE_ACC_SPI_ICM42688P
 #define USE_GYRO
