@@ -62,6 +62,20 @@
 
 #define UART1_TX_PIN        PB6
 #define UART1_RX_PIN        PB7
+
+// UART1 (custom link) RX via DMA2 Stream5/Ch4: eliminates the per-byte RXNE
+// interrupt deadline (1 byte time = 10.85 us @921600), which gyro/DShot-bidir
+// interrupt storms occasionally exceed -> exactly-one-byte frame loss ->
+// single-shot CLI requests time out (real-hardware finding 2026-11-11).
+// F4 uses the dma_reqmap path (USE_DMA_SPEC): UART1_RX_DMA_OPT 0 = the
+// reqmap's first option { DMA(2,5,4) } (opt 1 = Stream2 conflicts with the
+// TIM8 motor DShot streams). Stream audit: TIM8 owns DMA2 S2/S3/S6/S7 (ch7);
+// SPI1 (flash) is PIO in this tree (no DMA claim); UART1_TX DMA stays OFF
+// (S7 vs MOTOR1 TIM8_CH4 - the 2026-09-23 freeze). RX moves to a circular
+// DMA ring drained by the 200 Hz custom-link task; the parser then runs in
+// task context, so the frame-inter-byte timeout must exceed one task period
+// (customLinkInit enforces >= 50 ms).
+#define UART1_RX_DMA_OPT 0
 #define UART2_TX_PIN        PA2
 #define UART2_RX_PIN        PA3
 #define UART3_TX_PIN        PC10
